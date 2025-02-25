@@ -1,17 +1,18 @@
-name: Devops SonarQube Analysis
- 
+# SonarQube Analysis Workflow
+name: DevOps SonarQube Analysis
+
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   sonar:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
- 
+
       - name: Run SonarScanner
         run: |
           docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli \
@@ -22,27 +23,30 @@ jobs:
             -Dsonar.login=sqp_c95adecdcc8b4443d3db5fca6b9598bf8f6cbef4
 
 
+---
+
+# Docker Image CI Workflow
 name: Docker Image CI
- 
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
- 
+
 jobs:
- 
   build:
- 
     runs-on: ubuntu-latest
- 
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      env:
-        USER: ${{ secrets.USER }}
-        PASS: ${{ secrets.PASS }}   
-      run: |        
-        docker build . --file Dockerfile --tag sachindabhade1905/docker-sonarqube-test
-        echo $PASS | docker login -u $USER --password-stdin       
-        docker push sachindabhade1905/docker-sonarqube-test
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Build the Docker image
+        env:
+          USER: ${{ secrets.USER }}
+          PASS: ${{ secrets.PASS }}   
+        run: |
+          docker build . --file Dockerfile --tag sachindabhade1905/docker-sonarqube-test
+          echo $PASS | docker login -u $USER --password-stdin
+          docker push sachindabhade1905/docker-sonarqube-test
