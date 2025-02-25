@@ -20,3 +20,23 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.host.url=http://13.232.4.242:9093 \
             -Dsonar.login=sqp_c95adecdcc8b4443d3db5fca6b9598bf8f6cbef4
+
+
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
