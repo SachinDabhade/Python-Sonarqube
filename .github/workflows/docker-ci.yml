@@ -1,13 +1,33 @@
-name: Docker Image CI
+name: DevOps Workflow with SonarQube Analysis and Docker Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
+  # First job: SonarQube Analysis
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run SonarScanner
+        run: |
+          docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli \
+          sonar-scanner \
+            -Dsonar.projectKey=python-project-sonarqube \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://13.232.4.242:9093 \
+            -Dsonar.login=sqp_c95adecdcc8b4443d3db5fca6b9598bf8f6cbef4
+
+  # Second job: Docker Image Build (depends on the Sonar job)
   build:
+    needs: sonar  # Ensures that 'build' job only runs after 'sonar' job is successful
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +37,7 @@ jobs:
       - name: Build the Docker image
         env:
           USER: ${{ secrets.USER }}
-          PASS: ${{ secrets.PASS }}   
+          PASS: ${{ secrets.PASS }}
         run: |
           docker build . --file Dockerfile --tag sachindabhade1905/docker-sonarqube-test
           echo $PASS | docker login -u $USER --password-stdin
